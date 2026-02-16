@@ -542,23 +542,39 @@ function taskRowHTML(task){
 function renderDash(){
     const t=visibleTasks(null);
     const inp=t.filter(x=>x.status==='inProgress').length;
-    const comp = (CU.role==='employee') ? t.filter(x=>['completed','awaitingApproval'].includes(x.status)).length : t.filter(x=>x.status==='completed').length;
-    const urg=t.filter(x=>x.priority==1&&x.status!=='completed'&&x.status!=='awaitingApproval');
+    const comp=t.filter(x=>x.status==='completed').length;
+    const awaitA=t.filter(x=>x.status==='awaitingApproval').length;
+    const urg=t.filter(x=>x.priority===1 && x.status!=='completed');
+    const now=new Date();
+    const userName=(CU.full_name||CU.username||'');
+    const extraTile = (CU.role==='employee')
+        ? `<div class="bg-gray-900 rounded-2xl p-5 border border-purple-900/30">
+              <p class="text-purple-300 text-sm">Čeká na potvrzení</p>
+              <p class="text-4xl font-black text-purple-300 mt-1">${awaitA}</p>
+           </div>`
+        : '';
+
     return `<div class="space-y-6">
         <div class="flex justify-between items-start">
-            <div><h1 class="text-3xl font-black">Dashboard</h1><p class="text-gray-400">Vítejte, ${CU.full_name}</p></div>
-            <p class="text-gray-500 text-sm">${new Date().toLocaleDateString('cs-CZ',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</p>
+            <div>
+                <h1 class="text-3xl font-black">Dashboard</h1>
+                <p class="text-gray-400 mt-1">Vítejte, ${userName}</p>
+            </div>
+            <div class="text-right">
+                <p class="text-gray-400 text-sm">${now.toLocaleDateString('cs-CZ',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</p>
+            </div>
         </div>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="bg-gray-900 rounded-2xl p-5 border border-gray-800"><p class="text-gray-400 text-sm">Celkem úkolů</p><p class="text-4xl font-black mt-1">${t.length}</p></div>
             <div class="bg-gray-900 rounded-2xl p-5 border border-yellow-900/30"><p class="text-yellow-400 text-sm">Probíhá</p><p class="text-4xl font-black text-yellow-400 mt-1">${inp}</p></div>
             <div class="bg-gray-900 rounded-2xl p-5 border border-green-900/30"><p class="text-green-400 text-sm">Dokončeno</p><p class="text-4xl font-black text-green-400 mt-1">${comp}</p></div>
-            <div class="bg-gray-900 rounded-2xl p-5 border border-red-900/30"><p class="text-red-400 text-sm">🔴 Urgentní</p><p class="text-4xl font-black text-red-400 mt-1">${urg.length}</p></div>
+            ${CU.role==='employee' ? extraTile : `<div class="bg-gray-900 rounded-2xl p-5 border border-red-900/30"><p class="text-red-400 text-sm">🔴 Urgentní</p><p class="text-4xl font-black text-red-400 mt-1">${urg.length}</p></div>`}
         </div>
-        ${urg.length?`<div class="bg-red-950/30 border border-red-800 rounded-2xl p-4"><h3 class="text-red-400 font-bold mb-3">🔴 Urgentní úkoly!</h3><div class="space-y-2">${urg.map(x=>taskRowHTML(x)).join('')}</div></div>`:''}
+        ${CU.role!=='employee' && urg.length?`<div class="bg-red-950/30 border border-red-800 rounded-2xl p-4"><h3 class="text-red-400 font-bold mb-3">🔴 Urgentní úkoly!</h3><div class="space-y-2">${urg.map(x=>taskRowHTML(x)).join('')}</div></div>`:''}
         <div class="bg-gray-900 rounded-2xl p-6 border border-gray-800"><h3 class="font-bold text-lg mb-4">Nedávné úkoly</h3><div class="space-y-2">${t.slice(0,8).map(x=>taskRowHTML(x)).join('')||'<p class="text-gray-500 text-center py-8">Žádné úkoly</p>'}</div></div>
     </div>`;
 }
+
 
 function renderTasks(sec){
     const t=visibleTasks(sec);
@@ -682,7 +698,53 @@ async function openDetail(tid){
                 </div>
             </div>`:''}
 
-            <div class="bg-gray-800 rounded-2xl p-5 mt-3 ${canE?'':'hidden'}">
+            
+            <div class="bg-gray-800 rounded-2xl p-5 mt-3">
+                <div class="flex items-center justify-between gap-3 flex-wrap">
+                    <h3 class="font-bold text-lg">📦 Denní kusy (výroba)</h3>
+                    <p class="text-gray-400 text-sm">${canE?'vidíš všechny záznamy':'vidíš jen svoje záznamy'}</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+                    <div>
+                        <label class="block text-gray-400 text-sm mb-1">Datum</label>
+                        <input type="date" id="prod_date_${task.id}" value="${new Date().toISOString().slice(0,10)}" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:border-red-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-gray-400 text-sm mb-1">Hotovo (ks)</label>
+                        <input type="number" min="0" id="prod_pcs_${task.id}" placeholder="např. 120" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:border-red-500 focus:outline-none">
+                    </div>
+                    <div class="flex items-end">
+                        <button onclick="addProd(${task.id})" class="w-full bg-green-700 hover:bg-green-600 text-white px-4 py-2 rounded-xl font-bold">➕ Přidat záznam</button>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    ${(()=>{
+                        const prod = task.production_entries ? JSON.parse(task.production_entries) : [];
+                        const rows = prod
+                          .filter(e=>e && e.ts)
+                          .filter(e=>canE || e.userId===CU.id)
+                          .sort((a,b)=>new Date(b.ts)-new Date(a.ts));
+                        if(!rows.length) return `<p class="text-gray-500 text-sm">Zatím žádné denní kusy. Doporučení: zapisuj po směně (1× denně).</p>`;
+                        return `<div class="space-y-2">
+                            ${rows.slice(0,40).map(e=>{
+                                const u=USERS.find(x=>x.id===e.userId);
+                                const d=new Date(e.ts);
+                                return `<div class="bg-gray-900 rounded-xl p-3 border border-gray-700 flex items-center justify-between gap-3">
+                                    <div>
+                                        <p class="font-semibold">${u?.full_name||e.userId} <span class="text-gray-500 font-normal">· ${d.toLocaleDateString('cs-CZ')}</span></p>
+                                        ${e.note?`<p class="text-gray-400 text-sm">${e.note}</p>`:''}
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-xl font-black">${e.pieces||0} ks</p>
+                                    </div>
+                                </div>`;
+                            }).join('')}
+                        </div>`;
+                    })()}
+                </div>
+            </div>
+
+<div class="bg-gray-800 rounded-2xl p-5 mt-3 ${canE?'':'hidden'}">
                 <h3 class="font-bold text-lg mb-3">🧾 Pracovní záznamy</h3>
                 ${(()=>{
                     const all=entries.slice().filter(x=>x && x.ts).sort((a,b)=>new Date(a.ts)-new Date(b.ts));
@@ -837,6 +899,38 @@ async function startW(tid){
     startTmr(tid,prevTotal,false);
     openDetail(tid);
 }
+
+
+function _pDate(ts){
+    try{
+        const d=new Date(ts);
+        const y=d.getFullYear();
+        const m=String(d.getMonth()+1).padStart(2,'0');
+        const da=String(d.getDate()).padStart(2,'0');
+        return `${y}-${m}-${da}`;
+    }catch(e){return '';}
+}
+
+async function addProd(tid){
+    const task=TASKS.find(t=>t.id===tid); if(!task) return;
+    const dateEl=document.getElementById(`prod_date_${tid}`);
+    const pcsEl=document.getElementById(`prod_pcs_${tid}`);
+    if(!pcsEl) return;
+    const pcs=parseInt(pcsEl.value||'0',10);
+    if(!Number.isFinite(pcs) || pcs<=0){
+        notify('Zadej počet kusů (>0).');
+        return;
+    }
+    const dStr = dateEl?.value || new Date().toISOString().slice(0,10);
+    // store ts as end-of-day-ish timestamp for consistency
+    const ts = new Date(dStr + 'T12:00:00').toISOString();
+    const prev = task.production_entries ? JSON.parse(task.production_entries) : [];
+    prev.push({userId: CU.id, pieces: pcs, ts});
+    await updDB(tid,{production_entries: JSON.stringify(prev)});
+    notify('✅ Denní kusy uloženy.');
+    openDetail(tid);
+}
+
 
 async function pauseW(tid){
     if(!TIMERS[tid])return;
@@ -1173,23 +1267,11 @@ function toggleEmpDetail(id){
 function renderReports(filterSecs, filterEmp){
     filterSecs = filterSecs || ['all'];
     filterEmp = filterEmp || 'all';
-    const allTsk = visibleTasks(null).filter(t=>t.status==='completed');
-    let tasks = filterSecs.includes('all') ? allTsk : allTsk.filter(t=>filterSecs.includes(t.section));
-    if(filterEmp !== 'all'){
-        const empId = parseInt(filterEmp);
-        tasks = tasks.filter(t=>{
-            const entries = t.time_entries ? JSON.parse(t.time_entries) : [];
-            return entries.some(e=>e.userId===empId);
-        });
-    }
-    let totT=0, totC=0, totPieces=0;
-    tasks.forEach(t=>{
-        const e=t.time_entries?JSON.parse(t.time_entries):[];
-        const s=e.reduce((x,y)=>x+(y.duration||0),0);
-        const m=t.materials?JSON.parse(t.materials):[];
-        totT+=s; totC+=(s/3600)*180+m.reduce((x,y)=>x+(y.qty*y.price),0);
-        totPieces+=(t.completed_pieces||0);
-    });
+
+    // MODE: summary | detailed | monthly
+    if(!window.currentReportMode) window.currentReportMode = 'detailed';
+    if(!window.currentReportMonth) window.currentReportMonth = new Date().toISOString().slice(0,7); // YYYY-MM
+
     const managerSecs = CU.role==='manager' ? (CU.section||'all').split(',') : ['all'];
     const allSections = [
         {val:'all', label:'🌐 Všechny úseky'},
@@ -1202,8 +1284,244 @@ function renderReports(filterSecs, filterEmp){
     const sections = CU.role==='superAdmin' ? allSections : allSections.filter(s=>s.val==='all'||managerSecs.includes(s.val));
     const employees = USERS.filter(u=>u.role==='employee');
 
+    const allCompleted = visibleTasks(null).filter(t=>t.status==='completed');
+    let tasks = filterSecs.includes('all') ? allCompleted : allCompleted.filter(t=>filterSecs.includes(t.section));
+
+    // helper parsers
+    const pEntries = (t)=> t.time_entries ? JSON.parse(t.time_entries) : [];
+    const pProd = (t)=> t.production_entries ? JSON.parse(t.production_entries) : [];
+
+    function dateKeyFromISO(iso){
+        const d=new Date(iso);
+        const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), da=String(d.getDate()).padStart(2,'0');
+        return `${y}-${m}-${da}`;
+    }
+    function normMinPerPiece(task){
+        const n = Number(task.norm||0); // ks/hod
+        return n>0 ? (60/n) : 0;
+    }
+    function fmtMin(x){return `${Math.round(x*10)/10}`;}
+
+    // filter by employee
+    if(filterEmp !== 'all'){
+        const empId = parseInt(filterEmp,10);
+        tasks = tasks.filter(t=>{
+            const e = pEntries(t);
+            const prod = pProd(t);
+            return e.some(x=>x.userId===empId) || prod.some(x=>x.userId===empId);
+        });
+    }
+
+    // SUMMARY totals
+    let totSec=0, totCost=0, totPieces=0;
+    tasks.forEach(t=>{
+        const e=pEntries(t);
+        const s=e.reduce((x,y)=>x+(y.duration||0),0);
+        const mats=t.materials?JSON.parse(t.materials):[];
+        totSec+=s;
+        totCost += (s/3600)*(CU.hourly_rate||180) + mats.reduce((x,y)=>x+(y.qty*y.price),0);
+        // monthly/detailed uses production entries; keep total pieces as completed_pieces for headline
+        totPieces += (t.completed_pieces||0);
+    });
+
+    // DETAILED aggregation (per task -> per day -> per employee)
+    function buildDetailed(task){
+        const segs = pEntries(task).filter(x=>x && x.ts);
+        const prod = pProd(task).filter(x=>x && x.ts);
+        const map = {}; // date -> empId -> {sec,pieces}
+        for(const s of segs){
+            const dk=dateKeyFromISO(s.ts);
+            map[dk] ||= {};
+            map[dk][s.userId] ||= {sec:0,pieces:0};
+            map[dk][s.userId].sec += (s.duration||0);
+        }
+        for(const p of prod){
+            const dk=dateKeyFromISO(p.ts);
+            map[dk] ||= {};
+            map[dk][p.userId] ||= {sec:0,pieces:0};
+            map[dk][p.userId].pieces += (p.pieces||0);
+        }
+        const days = Object.keys(map).sort();
+        const rows = [];
+        let tSec=0, tPieces=0;
+        for(const day of days){
+            const empIds = Object.keys(map[day]).map(x=>parseInt(x,10));
+            empIds.sort((a,b)=>{
+                const an=USERS.find(u=>u.id===a)?.full_name||'';
+                const bn=USERS.find(u=>u.id===b)?.full_name||'';
+                return an.localeCompare(bn,'cs');
+            });
+            for(const eid of empIds){
+                const v=map[day][eid];
+                tSec += v.sec;
+                tPieces += v.pieces;
+                const mins=v.sec/60;
+                const mpp = v.pieces>0 ? (mins/v.pieces) : 0;
+                const norm = normMinPerPiece(task);
+                const diff = norm>0 && v.pieces>0 ? (mpp-norm) : null;
+                rows.push({day,eid,sec:v.sec,pieces:v.pieces,mins,mpp,norm,diff});
+            }
+        }
+        const totalMins=tSec/60;
+        const totalMpp = tPieces>0 ? totalMins/tPieces : 0;
+        const norm=normMinPerPiece(task);
+        const totalDiff = norm>0 && tPieces>0 ? (totalMpp-norm) : null;
+        return {rows, tSec, tPieces, totalMpp, norm, totalDiff};
+    }
+
+    function renderDetailedHTML(){
+        if(!tasks.length) return `<p class="text-gray-500 text-center py-8">Žádná data</p>`;
+        return `<div class="space-y-4">
+            ${tasks.map(task=>{
+                const d=buildDetailed(task);
+                const head = `<div class="flex items-center justify-between flex-wrap gap-3">
+                    <div>
+                        <p class="font-black text-lg">${task.task_name} <span class="text-gray-500 font-normal">#${task.task_number}</span></p>
+                        <p class="text-gray-500 text-sm">${sn(task.section)} · ${task.supplier||''}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm text-gray-400">Celkem</p>
+                        <p class="font-black">${fmt(d.tSec)} · ${d.tPieces} ks</p>
+                        <p class="text-gray-400 text-sm">Průměr: ${d.tPieces?fmtMin(d.totalMpp):'-'} min/ks ${d.norm?`(norma ${fmtMin(d.norm)})`:''}</p>
+                    </div>
+                </div>`;
+                if(!d.rows.length){
+                    return `<div class="bg-gray-900 rounded-2xl p-5 border border-gray-800">${head}<p class="text-gray-500 mt-3">Chybí denní kusy (📦 Denní kusy) nebo časové záznamy.</p></div>`;
+                }
+                return `<div class="bg-gray-900 rounded-2xl p-5 border border-gray-800">
+                    ${head}
+                    <div class="overflow-x-auto mt-4">
+                        <table class="min-w-full text-sm">
+                            <thead class="text-gray-400">
+                                <tr class="border-b border-gray-800">
+                                    <th class="text-left py-2 pr-4">Den</th>
+                                    <th class="text-left py-2 pr-4">Zaměstnanec</th>
+                                    <th class="text-right py-2 pr-4">Čas</th>
+                                    <th class="text-right py-2 pr-4">Kusy</th>
+                                    <th class="text-right py-2 pr-4">Min/ks</th>
+                                    <th class="text-right py-2">Vs norma</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${d.rows.map(r=>{
+                                    const u=USERS.find(x=>x.id===r.eid);
+                                    const vs = (r.diff===null) ? '-' : (r.diff>0?`+${fmtMin(r.diff)}`:fmtMin(r.diff));
+                                    return `<tr class="border-b border-gray-800/60">
+                                        <td class="py-2 pr-4 text-gray-300">${new Date(r.day).toLocaleDateString('cs-CZ')}</td>
+                                        <td class="py-2 pr-4">${u?.full_name||r.eid}</td>
+                                        <td class="py-2 pr-4 text-right">${fmt(r.sec)}</td>
+                                        <td class="py-2 pr-4 text-right font-semibold">${r.pieces}</td>
+                                        <td class="py-2 pr-4 text-right">${r.pieces?fmtMin(r.mpp):'-'}</td>
+                                        <td class="py-2 text-right ${r.diff>0?'text-yellow-300':r.diff<0?'text-green-300':'text-gray-400'}">${vs}</td>
+                                    </tr>`;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>`;
+            }).join('')}
+        </div>`;
+    }
+
+    // MONTHLY base for employee
+    function renderMonthlyHTML(){
+        const month = window.currentReportMonth; // YYYY-MM
+        const empId = (filterEmp==='all') ? null : parseInt(filterEmp,10);
+        if(!empId){
+            return `<p class="text-gray-500">Vyber zaměstnance výše (Filtrovat podle zaměstnance) a pak měsíc.</p>`;
+        }
+        // collect tasks where emp has entries in the month (including awaitingApproval if needed)
+        const monthStart = new Date(month+'-01T00:00:00');
+        const monthEnd = new Date(monthStart);
+        monthEnd.setMonth(monthEnd.getMonth()+1);
+
+        const allForMonth = visibleTasks(null).filter(t=>t.status==='completed' || t.status==='awaitingApproval');
+        const scoped = filterSecs.includes('all') ? allForMonth : allForMonth.filter(t=>filterSecs.includes(t.section));
+
+        const rows=[];
+        let sumSec=0, sumPieces=0;
+        for(const task of scoped){
+            const segs = pEntries(task).filter(e=>e.userId===empId && e.ts);
+            const prod = pProd(task).filter(p=>p.userId===empId && p.ts);
+            const sec = segs.filter(e=>{
+                const d=new Date(e.ts); return d>=monthStart && d<monthEnd;
+            }).reduce((s,e)=>s+(e.duration||0),0);
+            const pcs = prod.filter(p=>{
+                const d=new Date(p.ts); return d>=monthStart && d<monthEnd;
+            }).reduce((s,p)=>s+(p.pieces||0),0);
+            if(sec===0 && pcs===0) continue;
+            sumSec+=sec; sumPieces+=pcs;
+            const mins=sec/60;
+            const mpp=pcs>0?mins/pcs:0;
+            rows.push({task,sec,pcs,mpp});
+        }
+        rows.sort((a,b)=>b.sec-a.sec);
+
+        const u=USERS.find(x=>x.id===empId);
+        return `<div class="bg-gray-900 rounded-2xl p-5 border border-gray-800">
+            <div class="flex items-center justify-between flex-wrap gap-3">
+                <div>
+                    <p class="font-black text-lg">Měsíční přehled: ${u?.full_name||empId}</p>
+                    <p class="text-gray-500 text-sm">${month}</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-gray-400 text-sm">Součet</p>
+                    <p class="font-black">${fmt(sumSec)} · ${sumPieces} ks</p>
+                    <p class="text-gray-400 text-sm">Průměr: ${sumPieces?fmtMin((sumSec/60)/sumPieces):'-'} min/ks</p>
+                </div>
+            </div>
+
+            <div class="mt-4 flex items-center gap-3 flex-wrap">
+                <label class="text-gray-400 text-sm">Měsíc:</label>
+                <input type="month" value="${month}" onchange="setReportMonth(this.value)" class="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg">
+            </div>
+
+            <div class="overflow-x-auto mt-4">
+                <table class="min-w-full text-sm">
+                    <thead class="text-gray-400">
+                        <tr class="border-b border-gray-800">
+                            <th class="text-left py-2 pr-4">Úkol</th>
+                            <th class="text-right py-2 pr-4">Čas</th>
+                            <th class="text-right py-2 pr-4">Kusy</th>
+                            <th class="text-right py-2">Min/ks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rows.map(r=>`<tr class="border-b border-gray-800/60">
+                            <td class="py-2 pr-4">
+                                <a href="#" onclick="openDetail(${r.task.id});return false;" class="font-semibold hover:underline">${r.task.task_name}</a>
+                                <span class="text-gray-500">#${r.task.task_number}</span>
+                                <span class="ml-2 text-xs px-2 py-0.5 rounded-full bg-gray-800 text-gray-300">${sn(r.task.section)}</span>
+                                ${r.task.status==='awaitingApproval'?`<span class="ml-2 text-xs px-2 py-0.5 rounded-full bg-purple-900/30 text-purple-200">čeká</span>`:''}
+                            </td>
+                            <td class="py-2 pr-4 text-right">${fmt(r.sec)}</td>
+                            <td class="py-2 pr-4 text-right font-semibold">${r.pcs}</td>
+                            <td class="py-2 text-right">${r.pcs?fmtMin(r.mpp):'-'}</td>
+                        </tr>`).join('') || `<tr><td colspan="4" class="py-6 text-center text-gray-500">Žádná data pro tento měsíc.</td></tr>`}
+                    </tbody>
+                </table>
+            </div>
+        </div>`;
+    }
+
+    const modeBtns = `
+        <div class="flex gap-2 flex-wrap">
+            <button onclick="setReportMode('summary')" class="px-4 py-2 rounded-xl font-bold text-sm border ${window.currentReportMode==='summary'?'ardon-red border-red-600 text-white':'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700'}">Souhrn</button>
+            <button onclick="setReportMode('detailed')" class="px-4 py-2 rounded-xl font-bold text-sm border ${window.currentReportMode==='detailed'?'ardon-red border-red-600 text-white':'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700'}">Podrobný</button>
+            <button onclick="setReportMode('monthly')" class="px-4 py-2 rounded-xl font-bold text-sm border ${window.currentReportMode==='monthly'?'ardon-red border-red-600 text-white':'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700'}">Měsíční (zaměstnanec)</button>
+        </div>`;
+
+    const body = window.currentReportMode==='monthly'
+        ? renderMonthlyHTML()
+        : (window.currentReportMode==='detailed'
+            ? renderDetailedHTML()
+            : `<div class="bg-gray-900 rounded-2xl p-6 border border-gray-800">
+                    <p class="text-gray-400 mb-3">Souhrn je stejný jako dříve. Pro požadovaný detail přepni na „Podrobný“.</p>
+               </div>`);
+
     return `<div class="space-y-5">
         <h1 class="text-3xl font-black">Výkazy</h1>
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="bg-gray-900 rounded-2xl p-4 border border-gray-800">
                 <p class="text-gray-400 text-xs font-semibold mb-3">Filtrovat podle úseku:</p>
@@ -1219,138 +1537,32 @@ function renderReports(filterSecs, filterEmp){
                 </select>
             </div>
         </div>
-        <div class="grid grid-cols-4 gap-4">
+
+        <div class="bg-gray-900 rounded-2xl p-4 border border-gray-800 flex items-center justify-between flex-wrap gap-3">
+            ${modeBtns}
+            <div class="text-gray-400 text-sm">Zobrazuji: ${tasks.length} dokončených úkolů</div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div class="bg-gray-900 rounded-2xl p-4 border border-gray-800"><p class="text-gray-400 text-xs">Dokončené úkoly</p><p class="text-3xl font-black">${tasks.length}</p></div>
-            <div class="bg-gray-900 rounded-2xl p-4 border border-gray-800"><p class="text-gray-400 text-xs">Celkový čas</p><p class="text-3xl font-black">${fmt(totT)}</p></div>
+            <div class="bg-gray-900 rounded-2xl p-4 border border-gray-800"><p class="text-gray-400 text-xs">Celkový čas</p><p class="text-3xl font-black">${fmt(totSec)}</p></div>
             <div class="bg-gray-900 rounded-2xl p-4 border border-gray-800"><p class="text-gray-400 text-xs">Celkem kusů</p><p class="text-3xl font-black">${totPieces}</p></div>
-            <div class="bg-gray-900 rounded-2xl p-4 border border-gray-800"><p class="text-gray-400 text-xs">Celkové náklady</p><p class="text-3xl font-black ardon-red-text">${totC.toFixed(0)} Kč</p></div>
+            <div class="bg-gray-900 rounded-2xl p-4 border border-gray-800"><p class="text-gray-400 text-xs">Celkové náklady</p><p class="text-3xl font-black ardon-red-text">${totCost.toFixed(0)} Kč</p></div>
         </div>
-        <div class="flex gap-3">
-            <button onclick="expAllXls(currentReportFilter)" class="flex-1 bg-green-700 hover:bg-green-600 text-white py-3 rounded-xl font-bold transition-colors">📥 Export Excel</button>
-            <button onclick="expAllPDF(currentReportFilter)" class="flex-1 bg-red-800 hover:bg-red-700 text-white py-3 rounded-xl font-bold transition-colors">📄 Export PDF</button>
-        </div>
-        <div class="space-y-4">
-            ${tasks.length===0
-                ? '<div class="bg-gray-900 rounded-2xl p-10 text-center border border-gray-800"><p class="text-gray-500">Žádné dokončené úkoly</p></div>'
-                : tasks.map(t=>{
-                    const entries = t.time_entries ? JSON.parse(t.time_entries) : [];
-                    const totalSec = entries.reduce((s,e)=>s+(e.duration||0),0);
-                    const mats = t.materials ? JSON.parse(t.materials) : [];
-                    const matC = mats.reduce((s,m)=>s+(m.qty*m.price),0);
-                    const labor = (totalSec/3600)*180;
-                    const pieces = t.completed_pieces||0;
-                    const avgPerPiece = pieces>0 ? (labor+matC)/pieces : 0;
-                    const normOK = t.norm && totalSec>0 ? Math.round((pieces/((totalSec/3600)*t.norm))*100) : null;
-                    const billing = t.billing ? JSON.parse(t.billing) : {};
-                    const byDay = {};
-                    entries.forEach(e=>{
-                        const day = e.ts ? new Date(e.ts).toLocaleDateString('cs-CZ') : 'Neznámý den';
-                        if(!byDay[day]) byDay[day]=[];
-                        byDay[day].push(e);
-                    });
-                    const secColors={exqc:'border-blue-700',blistrovani:'border-purple-700',potisk:'border-green-700',prace_z_domu:'border-orange-700',grafika:'border-pink-700'};
-                    const secBadge={exqc:'bg-blue-900/40 text-blue-300',blistrovani:'bg-purple-900/40 text-purple-300',potisk:'bg-green-900/40 text-green-300',prace_z_domu:'bg-orange-900/40 text-orange-300',grafika:'bg-pink-900/40 text-pink-300'};
-                    const creator = USERS.find(u=>u.id===t.created_by);
-                    return `<div class="bg-gray-900 rounded-2xl border border-gray-800 ${secColors[t.section]||'border-gray-700'} border-l-4 overflow-hidden">
-                        <div class="p-4 cursor-pointer hover:bg-gray-800 transition-colors" onclick="toggleReportDetail('rd_${t.id}')">
-                            <div class="flex items-start justify-between gap-4">
-                                <div class="flex items-start gap-3">
-                                    <div class="bg-gray-800 rounded-xl px-3 py-2 text-center min-w-[50px] flex-shrink-0">
-                                        <p class="text-gray-500 text-xs">č.</p>
-                                        <p class="text-white font-black text-xl leading-none">${t.task_number}</p>
-                                    </div>
-                                    <div>
-                                        <div class="flex items-center gap-2 flex-wrap">
-                                            <h3 class="font-bold text-white text-lg">${t.task_name}</h3>
-                                            <span class="text-xs px-2 py-0.5 rounded-full font-semibold ${secBadge[t.section]||'bg-gray-800 text-gray-400'}">${sn(t.section)}</span>
-                                            ${normOK!==null?`<span class="text-xs px-2 py-0.5 rounded-full font-bold ${normOK>=100?'bg-green-900/40 text-green-400':'bg-yellow-900/40 text-yellow-400'}">📊 Norma: ${normOK}%</span>`:''}
-                                        </div>
-                                        <p class="text-gray-400 text-sm mt-0.5">${t.supplier||''}${t.goods_type?' · '+t.goods_type:''}${t.customer?' · 👤 '+t.customer:''}</p>
-                                        <p class="text-gray-500 text-xs">Zadal/a: ${creator?.full_name||'-'} · ${new Date(t.created_at).toLocaleString('cs-CZ')}${t.completed_at?' · Dokončeno: '+new Date(t.completed_at).toLocaleString('cs-CZ'):''}</p>
-                                    </div>
-                                </div>
-                                <div class="flex gap-3 flex-shrink-0 text-center">
-                                    <div class="bg-gray-800 rounded-xl px-3 py-2"><p class="text-gray-500 text-xs">Čas</p><p class="text-white font-bold text-sm">${fmt(totalSec)}</p></div>
-                                    <div class="bg-gray-800 rounded-xl px-3 py-2"><p class="text-gray-500 text-xs">Kusů</p><p class="text-white font-bold text-sm">${pieces}</p></div>
-                                    <div class="bg-gray-800 rounded-xl px-3 py-2"><p class="text-gray-500 text-xs">Náklady</p><p class="text-white font-bold text-sm">${(labor+matC).toFixed(0)} Kč</p></div>
-                                    ${billing.billed_to?`<div class="bg-green-900/20 border border-green-800 rounded-xl px-3 py-2"><p class="text-green-400 text-xs">Vyúčt.</p><p class="text-green-400 font-bold text-sm">${billing.billed_to}</p></div>`:''}
-                                    <span class="text-gray-500 self-center text-xl">›</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div id="rd_${t.id}" class="hidden border-t border-gray-800">
-                            <div class="p-5 space-y-4">
-                                <div class="bg-gray-800 rounded-xl p-4">
-                                    <p class="text-gray-300 font-bold mb-3">📊 Celkový souhrn</p>
-                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                        <div class="bg-gray-700 rounded-xl p-3"><p class="text-gray-400 text-xs">Celkový čas</p><p class="text-white font-black text-lg">${fmt(totalSec)}</p></div>
-                                        <div class="bg-gray-700 rounded-xl p-3"><p class="text-gray-400 text-xs">Počet kusů</p><p class="text-white font-black text-lg">${pieces}</p></div>
-                                        <div class="bg-gray-700 rounded-xl p-3"><p class="text-gray-400 text-xs">Náklady práce</p><p class="text-white font-black text-lg">${labor.toFixed(0)} Kč</p></div>
-                                        <div class="bg-gray-700 rounded-xl p-3"><p class="text-gray-400 text-xs">Náklady materiálu</p><p class="text-white font-black text-lg">${matC.toFixed(0)} Kč</p></div>
-                                        <div class="bg-gray-700 rounded-xl p-3"><p class="text-gray-400 text-xs">Celkem náklady</p><p class="ardon-red-text font-black text-lg">${(labor+matC).toFixed(0)} Kč</p></div>
-                                        ${pieces>0?`<div class="bg-gray-700 rounded-xl p-3"><p class="text-gray-400 text-xs">Průměr / kus</p><p class="text-white font-black text-lg">${avgPerPiece.toFixed(2)} Kč</p></div>`:''}
-                                        ${t.norm?`<div class="bg-gray-700 rounded-xl p-3"><p class="text-gray-400 text-xs">Norma (ks/hod)</p><p class="text-white font-black text-lg">${t.norm}</p></div>`:''}
-                                        ${normOK!==null?`<div class="rounded-xl p-3 ${normOK>=100?'bg-green-900/30':'bg-yellow-900/30'}"><p class="text-gray-400 text-xs">Plnění normy</p><p class="font-black text-lg ${normOK>=100?'text-green-400':'text-yellow-400'}">${normOK}%</p></div>`:''}
-                                    </div>
-                                </div>
-                                <div class="bg-gray-800 rounded-xl p-4">
-                                    <p class="text-gray-300 font-bold mb-3">📅 Záznamy po dnech</p>
-                                    ${Object.keys(byDay).length===0
-                                        ? '<p class="text-gray-500 text-sm">Žádné záznamy</p>'
-                                        : Object.entries(byDay).map(([day, dayEntries])=>{
-                                            const daySec = dayEntries.reduce((s,e)=>s+(e.duration||0),0);
-                                            return `<div class="mb-3 last:mb-0">
-                                                <div class="flex items-center gap-2 mb-2">
-                                                    <span class="text-gray-300 font-semibold text-sm">📅 ${day}</span>
-                                                    <span class="text-gray-500 text-xs">· celkem ${fmt(daySec)}</span>
-                                                </div>
-                                                <div class="space-y-1 pl-4">
-                                                    ${dayEntries.map(e=>{
-                                                        const worker = USERS.find(u=>u.id===e.userId);
-                                                        const workerName = worker?.full_name||('Zaměstnanec #'+e.userId);
-                                                        const cost = ((e.duration||0)/3600)*(worker?.hourly_rate||180);
-                                                        return `<div class="bg-gray-700 rounded-lg px-3 py-2 flex justify-between items-center">
-                                                            <div class="flex items-center gap-3">
-                                                                <div class="w-7 h-7 rounded-lg bg-red-900/40 flex items-center justify-center text-xs font-black text-red-400">${workerName.charAt(0)}</div>
-                                                                <div>
-                                                                    <p class="text-white text-sm font-semibold">${workerName}</p>
-                                                                    <p class="text-gray-500 text-xs">${e.ts?new Date(e.ts).toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'}):''}</p>
-                                                                </div>
-                                                            </div>
-                                                            <div class="text-right">
-                                                                <p class="text-white font-bold font-mono">${fmt(e.duration||0)}</p>
-                                                                <p class="text-gray-400 text-xs">${cost.toFixed(2)} Kč</p>
-                                                            </div>
-                                                        </div>`;
-                                                    }).join('')}
-                                                </div>
-                                            </div>`;
-                                        }).join('')}
-                                </div>
-                                ${mats.length>0?`<div class="bg-gray-800 rounded-xl p-4">
-                                    <p class="text-gray-300 font-bold mb-3">📦 Spotřebovaný materiál</p>
-                                    <div class="space-y-2">${mats.map(m=>`<div class="bg-gray-700 rounded-lg px-3 py-2 flex justify-between items-center"><p class="text-white text-sm">${m.name} <span class="text-gray-400">${m.qty} ${m.unit||'ks'}</span></p><p class="text-white font-bold">${(m.qty*m.price).toFixed(2)} Kč</p></div>`).join('')}</div>
-                                </div>`:''}
-                                ${billing.billed_to?`<div class="bg-green-900/20 border border-green-800 rounded-xl p-4">
-                                    <p class="text-green-400 font-bold mb-2">💰 Vyúčtováno</p>
-                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                        <div><p class="text-gray-500 text-xs">Komu</p><p class="text-white font-semibold">${billing.billed_to}</p></div>
-                                        ${billing.billed_date?`<div><p class="text-gray-500 text-xs">Datum</p><p class="text-white font-semibold">${new Date(billing.billed_date).toLocaleDateString('cs-CZ')}</p></div>`:''}
-                                        ${billing.billed_amount?`<div><p class="text-gray-500 text-xs">Částka</p><p class="text-green-400 font-bold text-lg">${billing.billed_amount} Kč</p></div>`:''}
-                                        ${billing.billed_note?`<div><p class="text-gray-500 text-xs">Poznámka</p><p class="text-white">${billing.billed_note}</p></div>`:''}
-                                    </div>
-                                </div>`:''}
-                                <div class="flex gap-2">
-                                    <button onclick="openDetail(${t.id})" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-xl text-sm font-bold">🔍 Otevřít úkol</button>
-                                    <button onclick="expSinglePDF(${t.id})" class="bg-red-800 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-sm font-bold">📄 PDF</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>`;
-                }).join('')}
-        </div>
+
+        ${body}
     </div>`;
 }
+
+function setReportMode(m){
+    window.currentReportMode=m;
+    document.getElementById('mainContent').innerHTML=renderReports(currentReportFilter,currentReportEmpFilter||'all');
+}
+function setReportMonth(m){
+    window.currentReportMonth=m;
+    document.getElementById('mainContent').innerHTML=renderReports(currentReportFilter,currentReportEmpFilter||'all');
+}
+
 
 function toggleReportDetail(id){
     const el=document.getElementById(id);
