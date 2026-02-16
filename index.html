@@ -234,6 +234,7 @@
                     <option value="blistrovani">💊 Blistrování</option>
                     <option value="potisk">🖨️ Potisk</option>
                     <option value="prace_z_domu">🏠 Práce z domu</option>
+                    <option value="grafika">🎨 Grafika</option>
                 </select></div>
             </div>
             <div><label class="block text-gray-400 text-sm mb-1">Email (pro notifikace)</label><input type="email" name="email" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:border-red-500 focus:outline-none"></div>
@@ -1953,17 +1954,27 @@ async function submitUser(ev){
 
     if(editId){
         // UPDATE existing user
-        try{ await db.from('users').update(userData).eq('id', editId); }
-        catch(e){ console.log('DB update error:', e); }
-        const idx = USERS.findIndex(u=>u.id===editId);
-        if(idx!==-1) USERS[idx] = {...USERS[idx], ...userData};
+        let dbOk = false;
+        try{
+            const {data, error} = await db.from('users').update(userData).eq('id', editId).select();
+            if(error) throw error;
+            dbOk = true;
+            if(data && data[0]){
+                const idx = USERS.findIndex(u=>u.id===editId);
+                if(idx!==-1) USERS[idx] = data[0];
+            }
+        } catch(e){
+            console.log('DB update error:', e);
+            const idx = USERS.findIndex(u=>u.id===editId);
+            if(idx!==-1) USERS[idx] = {...USERS[idx], ...userData};
+        }
         // If editing yourself, update CU so you don't get logged out
         if(CU.id === editId){
             CU = {...CU, ...userData};
             document.getElementById('sbName').textContent = CU.full_name;
             document.getElementById('sbRole').textContent = tx(CU.role);
         }
-        notify('✅ Uživatel upraven!');
+        notify(dbOk ? '✅ Uživatel upraven a uložen!' : '⚠️ Uloženo lokálně - zkontroluj připojení');
     } else {
         // INSERT new user
         const newUser = {...userData, created_at: new Date().toISOString()};
