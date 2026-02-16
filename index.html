@@ -54,20 +54,6 @@
                     <input type="password" id="loginPass" onkeypress="if(event.key==='Enter')doLogin()" class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl focus:outline-none focus:border-red-500" placeholder="••••••••">
                 </div>
                 <div id="loginErr" class="hidden text-red-400 text-sm p-3 bg-red-900/20 rounded-lg border border-red-800"></div>
-
-                <div id="loginHealth" class="text-xs text-gray-400 p-3 bg-gray-900/40 rounded-lg border border-gray-800">
-                    Diagnostika: načítám…
-                </div>
-                <div class="text-xs text-gray-400">
-                    Rychlé demo účty (klikni pro vyplnění):
-                    <div class="mt-2 flex flex-wrap gap-2">
-                        <button type="button" class="px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 hover:border-red-500" onclick="fillDemo('admin','admin123')">admin</button>
-                        <button type="button" class="px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 hover:border-red-500" onclick="fillDemo('admin2','admin123')">admin2</button>
-                        <button type="button" class="px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 hover:border-red-500" onclick="fillDemo('vedouci_potisk','heslo123')">vedoucí potisk</button>
-                        <button type="button" class="px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 hover:border-red-500" onclick="fillDemo('zamestnanec1','heslo123')">zaměstnanec1</button>
-                    </div>
-                </div>
-
                 <button type="submit" onclick="doLogin()" class="w-full ardon-red hover:bg-red-700 text-white py-3 rounded-xl font-bold text-lg transition-colors" id="lbl_loginBtn">Přihlásit se</button>
             </form>
         </div>
@@ -111,18 +97,18 @@
                 <button onclick="showView('potisk')" id="nav_potisk" class="navbtn w-full text-left px-4 py-3 rounded-xl flex items-center space-x-3 text-gray-300 hover:bg-red-900/20 transition-colors">
                     <span>🖨️</span><span class="font-medium">Potisk</span>
                 </button>
-                <button onclick="showView('prace_z_domu')" id="nav_prace_z_domu" class="navbtn w-full text-left px-4 py-3 rounded-xl flex items-center space-x-3 text-gray-300 hover:bg-red-900/20 transition-colors">
-                    <span>🏠</span><span class="font-medium">Práce z domu</span>
-                </button>
-                <button onclick="showView('grafika')" id="nav_grafika" class="navbtn w-full text-left px-4 py-3 rounded-xl flex items-center space-x-3 text-gray-300 hover:bg-red-900/20 transition-colors">
-                    <span>🎨</span><span class="font-medium">Grafika</span>
-                </button>
-
+                
                 <button onclick="showView('prijem')" id="nav_prijem" class="navbtn w-full text-left px-4 py-3 rounded-xl flex items-center space-x-3 text-gray-300 hover:bg-red-900/20 transition-colors">
                     <span>📦</span><span class="font-medium">Příjem</span>
                 </button>
                 <button onclick="showView('extra_prace')" id="nav_extra_prace" class="navbtn w-full text-left px-4 py-3 rounded-xl flex items-center space-x-3 text-gray-300 hover:bg-red-900/20 transition-colors">
                     <span>🧹</span><span class="font-medium">Extra práce</span>
+                </button>
+<button onclick="showView('prace_z_domu')" id="nav_prace_z_domu" class="navbtn w-full text-left px-4 py-3 rounded-xl flex items-center space-x-3 text-gray-300 hover:bg-red-900/20 transition-colors">
+                    <span>🏠</span><span class="font-medium">Práce z domu</span>
+                </button>
+                <button onclick="showView('grafika')" id="nav_grafika" class="navbtn w-full text-left px-4 py-3 rounded-xl flex items-center space-x-3 text-gray-300 hover:bg-red-900/20 transition-colors">
+                    <span>🎨</span><span class="font-medium">Grafika</span>
                 </button>
             </div>
             <div id="adminNav" class="hidden">
@@ -181,49 +167,47 @@
             <div class="grid grid-cols-3 gap-4">
                 <div><label class="block text-gray-400 text-sm mb-1">Úsek *</label>
                 <select name="section" id="createSection" onchange="toggleSectionFields(this.value)" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:border-red-500 focus:outline-none">
-                    <option value="exqc">ExQC</option><option value="blistrovani">Blistrování</option><option value="potisk">Potisk</option><option value="prace_z_domu">Práce z domu</option><option value="grafika">Grafika</option>
-                        <option value="prijem">Příjem</option>
-                        <option value="extra_prace">Extra práce</option>
+                    <option value="exqc">ExQC</option><option value="blistrovani">Blistrování</option><option value="potisk">Potisk</option><option value="prijem">Příjem</option><option value="extra_prace">Extra práce</option><option value="prace_z_domu">Práce z domu</option><option value="grafika">Grafika</option>
                 </select></div>
-
-                <div id="receiptFields" class="hidden col-span-2 bg-gray-900/40 border border-gray-800 rounded-2xl p-4 space-y-3">
-                    <p class="text-gray-300 font-semibold">📦 Příjem – údaje</p>
-                    <div class="grid grid-cols-3 gap-3">
-                        <div>
-                            <label class="block text-gray-400 text-sm mb-1">Kontejner / zásilka</label>
-                            <select name="receipt_container" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:border-red-500 focus:outline-none">
-                                <option value="">– vyber –</option>
-                                <option value="40TH">40TH</option>
-                                <option value="20TH">20TH</option>
-                                <option value="LCL">LCL</option>
-                                <option value="Jiné">Jiné</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-gray-400 text-sm mb-1">Počet kartonů</label>
-                            <input type="number" name="receipt_cartons" min="0" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:border-red-500 focus:outline-none" placeholder="např. 120">
-                        </div>
-                        <div>
-                            <label class="block text-gray-400 text-sm mb-1">Poznámka</label>
-                            <input type="text" name="receipt_note" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:border-red-500 focus:outline-none" placeholder="např. LCL / palety…">
-                        </div>
-                    </div>
-                    <p class="text-gray-500 text-xs">Vykládka + Třídění se budou logovat jako dvě fáze v rámci jednoho příjmu.</p>
-                </div>
-                <div id="extraWorkFields" class="hidden col-span-2 bg-gray-900/40 border border-gray-800 rounded-2xl p-4 space-y-3">
-                    <p class="text-gray-300 font-semibold">🧹 Extra práce – nastavení</p>
-                    <label class="flex items-center gap-2 text-gray-300 text-sm">
-                        <input type="checkbox" name="is_open_ended" value="1" class="accent-red-600">
-                        <span>Nekonečný úkol (nezavírá se, reportuje se měsíčně)</span>
-                    </label>
-                </div>
-
                 <div><label class="block text-gray-400 text-sm mb-1">Priorita</label>
                 <select name="priority" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:border-red-500 focus:outline-none">
                     <option value="0">Bez priority</option><option value="1">🔴 Priorita 1 - Urgentní</option><option value="2">🟡 Priorita 2 - Střední</option><option value="3">🟢 Priorita 3 - Normální</option>
                 </select></div>
                 <div><label class="block text-gray-400 text-sm mb-1">Norma (ks/hod)</label><input type="number" name="norm" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:border-red-500 focus:outline-none"></div>
             </div>
+            <div id="receiptFields" class="hidden p-4 rounded-xl border border-gray-700 bg-gray-900/30 space-y-3">
+                <div class="text-sm font-semibold text-gray-200">📦 Příjem – údaje</div>
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-gray-400 text-sm mb-1">Kontejner / zásilka</label>
+                        <select name="container_type" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:border-red-500 focus:outline-none">
+                            <option value="">—</option>
+                            <option value="40TH">40TH</option>
+                            <option value="20TH">20TH</option>
+                            <option value="LCL">LCL</option>
+                            <option value="Jiné">Jiné</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-400 text-sm mb-1">Počet kartonů</label>
+                        <input type="number" min="0" name="cartons" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:border-red-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-gray-400 text-sm mb-1">Poznámka k příjmu</label>
+                        <input type="text" name="receipt_note" placeholder="např. mokré kartony…" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:border-red-500 focus:outline-none">
+                    </div>
+                </div>
+                <div class="text-xs text-gray-400">Poznámky můžeš doplňovat i průběžně v detailu úkolu (Příjem).</div>
+            </div>
+
+            <div id="extraWorkFields" class="hidden p-4 rounded-xl border border-gray-700 bg-gray-900/30 space-y-3">
+                <div class="text-sm font-semibold text-gray-200">🧹 Extra práce</div>
+                <label class="flex items-center gap-2 text-sm text-gray-200">
+                    <input type="checkbox" name="open_ended" value="1" class="accent-red-600">
+                    Nekonečný úkol (vhodné pro měsíční reporty – úklid, inventura…)
+                </label>
+            </div>
+
             <div><label class="block text-gray-400 text-sm mb-1">Přiřadit zaměstnancům (Ctrl+klik = více)</label>
             <select name="assigned_to" id="assignSelect" multiple class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:border-red-500 focus:outline-none h-28"></select></div>
             <div>
@@ -313,37 +297,7 @@ try{
 }catch(e){ db = null; }
 
 
-function fillDemo(u,p){
-  try{
-    document.getElementById('loginUser').value = u;
-    document.getElementById('loginPass').value = p;
-    doLogin();
-  }catch(e){
-    const err=document.getElementById('loginErr');
-    if(err){ err.textContent='Chyba při vyplnění demo účtu: '+(e?.message||e); err.classList.remove('hidden'); }
-  }
-}
-
-function setLoginHealth(msg){
-  const el=document.getElementById('loginHealth');
-  if(el) el.textContent = msg;
-}
-
 let CU = null, USERS = [], TASKS = [], VIEW = 'dashboard', TIMERS = {}, LANG = 'cs';
-// Global error handler (helps debugging on phones without console)
-window.addEventListener('error', (ev) => {
-  try{
-    const err = document.getElementById('loginErr');
-    const ls = document.getElementById('loginScreen');
-    // Show only if on login screen
-    if(err && ls && !ls.classList.contains('hidden')){
-      setLoginHealth('Chyba JS: ' + (ev?.message || 'neznámá chyba'));
-      err.textContent = 'Chyba aplikace: ' + (ev.message || ev.error?.message || 'Neznámá chyba');
-      err.classList.remove('hidden');
-    }
-  }catch(_){}
-});
-
 
 // ---------- Helpers for cost & exports ----------
 function getUserById(uid){
@@ -362,19 +316,6 @@ function laborCostEntries(entries){
 function fmtKc(n){
     const x=Number(n||0);
     return x.toLocaleString('cs-CZ',{maximumFractionDigits:0})+' Kč';
-}
-
-function esc(s){
-    return (s??'').toString()
-        .replace(/&/g,'&amp;')
-        .replace(/</g,'&lt;')
-        .replace(/>/g,'&gt;')
-        .replace(/"/g,'&quot;')
-        .replace(/'/g,'&#39;');
-}
-function fmtDT(iso){
-    if(!iso) return '';
-    try{ return new Date(iso).toLocaleString('cs-CZ'); }catch(e){ return String(iso); }
 }
 function sanitizeFilename(s){
     return (s||'report').toString().replace(/[^a-z0-9\-_]+/gi,'_').slice(0,80);
@@ -489,19 +430,7 @@ function tx(k){ return TXT[LANG][k]||k; }
 
 function setLang(l){ LANG=l; document.getElementById('lbl_loginBtn').textContent=tx('loginBtn'); }
 
-function sn(s){
-    return ({
-        exqc:'ExQC',
-        blistrovani:'Blistrování',
-        potisk:'Potisk',
-        prace_z_domu:'Práce z domu',
-        grafika:'Grafika',
-        prijem:'Příjem',
-        extra_prace:'Extra práce',
-        all:'Všechny'
-    })[s] || s;
-}
-
+function sn(s){ return {exqc:'ExQC',blistrovani:'Blistrování',potisk:'Potisk',prace_z_domu:'Práce z domu',all:'Všechny'}[s]||s; }
 
 function getSections(sectionStr){
     if(!sectionStr)return 'Všechny';
@@ -510,20 +439,6 @@ function getSections(sectionStr){
 }
 
 function fmt(s){ const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=Math.floor(s%60); return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`; }
-
-
-async function safePostLogin(errEl){
-  try{ await loadData(); }catch(e){ console.log('loadData failed', e); }
-  try{ restoreActiveTimers(); }catch(e){ console.log('restoreActiveTimers failed', e); }
-  try{ showApp(); }catch(e){
-    console.log('showApp failed', e);
-    if(errEl){
-      errEl.textContent = 'Přihlášení proběhlo, ale aplikace spadla: ' + (e?.message || e);
-      errEl.classList.remove('hidden');
-    }
-    throw e;
-  }
-}
 
 async function doLogin(){
     const u=document.getElementById('loginUser').value.trim();
@@ -540,7 +455,9 @@ async function doLogin(){
         if(res.data && res.data.length>0){
             CU=res.data[0];
             err.classList.add('hidden');
-            await safePostLogin(err);
+            await loadData();
+        restoreActiveTimers();
+        showApp();
             return;
         } else if(res.error){
             console.log('Supabase error:', res.error);
@@ -561,7 +478,9 @@ async function doLogin(){
             if(user){
                 CU=user;
                 err.classList.add('hidden');
-                await safePostLogin(err);
+                await loadData();
+        restoreActiveTimers();
+        showApp();
                 return;
             }
         }
@@ -586,7 +505,9 @@ async function doLogin(){
         CU=demoUser;
         USERS=DEMO;
         err.classList.add('hidden');
-        await safePostLogin(err);
+        await loadData();
+        restoreActiveTimers();
+        showApp();
         return;
     }
     
@@ -597,21 +518,12 @@ async function doLogin(){
 function doLogout(){CU=null;sessionStorage.removeItem('cu');Object.values(TIMERS).forEach(t=>clearInterval(t.iv));TIMERS={};document.getElementById('loginScreen').classList.remove('hidden');document.getElementById('mainApp').classList.add('hidden');document.getElementById('loginUser').value='';document.getElementById('loginPass').value='';}
 
 async function loadData(){
-    // If Supabase is not available (CDN blocked / offline), use localStorage only
-    if(!db){
-        USERS = JSON.parse(localStorage.getItem('au')||'[]');
-        TASKS = JSON.parse(localStorage.getItem('at')||'[]');
-        return;
-    }
     try{
         const {data:u}=await db.from('users').select('*').order('full_name');
         if(u)USERS=u;
         const {data:t}=await db.from('tasks').select('*').order('created_at',{ascending:false});
         if(t)TASKS=t;
-    }catch(e){
-        USERS=JSON.parse(localStorage.getItem('au')||'[]');
-        TASKS=JSON.parse(localStorage.getItem('at')||'[]');
-    }
+    }catch(e){USERS=JSON.parse(localStorage.getItem('au')||'[]');TASKS=JSON.parse(localStorage.getItem('at')||'[]');}
 }
 
 function saveLoc(){localStorage.setItem('au',JSON.stringify(USERS));localStorage.setItem('at',JSON.stringify(TASKS));}
@@ -620,14 +532,13 @@ function saveLoc(){localStorage.setItem('au',JSON.stringify(USERS));localStorage
 window.addEventListener('DOMContentLoaded', async () => {
     const saved = sessionStorage.getItem('cu');
     if(saved){
-        const err = document.getElementById('loginErr');
         try{
             CU = JSON.parse(saved);
-            await safePostLogin(err);
+            await loadData();
+        restoreActiveTimers();
+        showApp();
         } catch(e){
-            console.log('Session restore failed', e);
             sessionStorage.removeItem('cu');
-            try{ if(err){ err.textContent = ''; err.classList.add('hidden'); } }catch(_){}
         }
     }
 });
@@ -679,26 +590,23 @@ function showApp(){
         }
     }
     showView('dashboard');
-
-    // Load warehouse data only for admins and only when Supabase is available
-    if(db){
-        try{
-            if(CU.role==='superAdmin'){
-                loadWarehouse();loadSuppliers();loadCustomers();loadLogos();
-            }
-        }catch(e){ console.log('Warehouse load failed', e); }
-
-        // Live updates (optional)
-        try{
-            db.channel('tc')
-              .on('postgres_changes',{event:'*',schema:'public',table:'tasks'},async()=>{
-                  try{ await loadData(); }catch(_){}
-                  try{ showView(VIEW); }catch(_){}
-              })
-              .subscribe();
-        }catch(e){ console.log('Realtime subscribe failed', e); }
-    }
+    loadWarehouse();loadSuppliers();loadCustomers();loadLogos();
+    db.channel('tc').on('postgres_changes',{event:'*',schema:'public',table:'tasks'},async()=>{await loadData();showView(VIEW);}).subscribe();
 }
+
+
+let SECTION_SUB_MODE = {}; // {section: 'active'|'completed'}
+
+function showSectionSub(section, mode){
+    SECTION_SUB_MODE[section]=mode;
+    showView(section);
+    // After view renders list, apply filter
+    setTimeout(()=>{
+        if(mode==='completed') filterT('completed', section);
+        else filterT('all', section);
+    }, 0);
+}
+
 function updateSubnavVisibility(){
     ['exqc','blistrovani','potisk','prace_z_domu','grafika'].forEach(sec=>{
         const el=document.getElementById('subnav_'+sec);
@@ -893,34 +801,7 @@ async function openDetail(tid){
     const aNames=aIds.map(id=>USERS.find(u=>u.id===id)?.full_name||id).join(', ');
     const mats=task.materials?JSON.parse(task.materials):[];
     const entries=task.time_entries?JSON.parse(task.time_entries):[];
-    // Příjem: oddělíme hlavičku s údaji (kontejner/kartony/pozn.) z popisu a připravíme průběžné poznámky (např. mokré kartony)
-    let cleanDesc = task.description || '';
-    let receiptHeader = '';
-    if(task.section==='prijem' && cleanDesc.trim().startsWith('[PŘÍJEM]')){
-        const parts = cleanDesc.split('\n');
-        receiptHeader = parts.shift();
-        cleanDesc = parts.join('\n').trim();
-    }
-    const receiptNotes = task.section==='prijem' ? entries.filter(e=>e.phase==='receipt_note') : [];
-    const receiptNotesHTML = task.section==='prijem' ? (
-        receiptNotes.length ? receiptNotes.map(e=>{
-            const who = e.user_name || (USERS.find(u=>u.id===e.user_id)?.full_name||e.user_id);
-            const when = e.endTime ? fmtDT(e.endTime) : '';
-            const note = e.note || '';
-            const img = e.photo_url ? `<img src="${e.photo_url}" class="mt-2 rounded-xl max-h-56 object-cover w-full" onerror="this.outerHTML='<p class=\'text-gray-500 text-sm\'>Foto nelze načíst</p>'">` : '';
-            return `<div class="bg-gray-900/40 border border-gray-800 rounded-2xl p-3">
-                <div class="flex items-center justify-between gap-2">
-                    <p class="font-semibold">${who}</p>
-                    <p class="text-gray-500 text-xs">${when}</p>
-                </div>
-                <p class="text-gray-200 mt-1 whitespace-pre-line">${esc(note)}</p>
-                ${img}
-            </div>`;
-        }).join('') : `<p class="text-gray-500 text-sm">Zatím žádné poznámky k příjmu.</p>`
-    ) : '';
     const totalSec=entries.reduce((s,e)=>s+(e.duration||0),0);
-    const vykladkaSec = task.section==='prijem' ? entries.filter(e=>e.phase==='vykladka').reduce((s,e)=>s+(e.duration||0),0) : 0;
-    const trideniSec  = task.section==='prijem' ? entries.filter(e=>e.phase==='trideni').reduce((s,e)=>s+(e.duration||0),0) : 0;
     const hrs=totalSec/3600;
     const labor=hrs*(CU.hourly_rate||180);
     const matC=mats.reduce((s,m)=>s+(m.qty*m.price),0);
@@ -951,7 +832,7 @@ async function openDetail(tid){
                 <div class="bg-gray-800 rounded-xl p-3"><p class="text-gray-500 text-xs">Přiřazeno</p><p class="font-semibold text-sm">${aNames||'-'}</p></div>
                 ${task.norm?`<div class="bg-gray-800 rounded-xl p-3"><p class="text-gray-500 text-xs">Norma</p><p class="font-semibold">${task.norm} ks/hod</p></div>`:''}
             </div>
-            ${cleanDesc?`<div class="bg-gray-800 rounded-xl p-4"><p class="text-gray-500 text-xs mb-1">Popis práce</p><p class="whitespace-pre-line">${esc(cleanDesc)}</p></div>`:''}
+            ${task.description?`<div class="bg-gray-800 rounded-xl p-4"><p class="text-gray-500 text-xs mb-1">Popis práce</p><p>${task.description}</p></div>`:''}
             ${task.work_procedure?`<div class="bg-gray-800 rounded-xl p-4"><p class="text-gray-500 text-xs mb-1">Pracovní postup</p><p>${task.work_procedure}</p></div>`:''}
             ${task.photo_url?`
             <div>
@@ -959,32 +840,6 @@ async function openDetail(tid){
                 <img src="${task.photo_url}" class="rounded-xl max-h-64 object-cover w-full cursor-pointer" onclick="window.open('${task.photo_url}','_blank')" onerror="this.parentElement.innerHTML='<p class=\'text-gray-500 text-sm\'>Foto nelze načíst - <a href=\'${task.photo_url}\' target=\'_blank\' class=\'text-blue-400\'>otevřít odkaz</a></p>'">
                 <p class="text-gray-500 text-xs mt-1">Klikni pro zobrazení v plné velikosti</p>
             </div>`:''}
-            ${task.section==='prijem'?`
-            <div class="bg-gray-900/40 border border-gray-800 rounded-2xl p-4 space-y-3">
-                <div class="flex items-center justify-between gap-3 flex-wrap">
-                    <div>
-                        <p class="font-black">📦 Příjem</p>
-                        ${receiptHeader?`<p class="text-gray-300 text-sm mt-1">${esc(receiptHeader.replace(/^\[PŘÍJEM\]\s*/,'').trim())}</p>`:''}
-                    </div>
-                </div>
-
-                <div class="bg-gray-800 rounded-xl p-3">
-                    <p class="text-gray-500 text-xs mb-1">Průběžné poznámky / události (např. mokré kartony, poškození)</p>
-                    <div class="grid md:grid-cols-2 gap-3">
-                        <div>
-                            <textarea id="receiptNoteText" rows="3" class="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-xl focus:border-red-500 focus:outline-none resize-none" placeholder="Napiš poznámku…"></textarea>
-                            <div class="flex items-center justify-between mt-2 gap-2 flex-wrap">
-                                <input id="receiptNotePhoto" type="file" accept="image/*" class="text-sm text-gray-400">
-                                <button onclick="addReceiptNote(${task.id})" class="ardon-red hover:bg-red-700 text-white px-4 py-2 rounded-xl font-bold">+ Přidat záznam</button>
-                            </div>
-                        </div>
-                        <div class="space-y-2 max-h-64 overflow-y-auto pr-1">
-                            ${receiptNotesHTML}
-                        </div>
-                    </div>
-                </div>
-            </div>`:''}
-
 
             ${canE?(()=>{
                 const b=task.billing?JSON.parse(task.billing):{};
@@ -1016,12 +871,7 @@ async function openDetail(tid){
                                    <button onclick="returnW(${task.id})" class="bg-yellow-700 hover:bg-yellow-600 text-white px-6 py-3 rounded-xl font-bold">↩ Vrátit zpět</button>`
                                 : `<span class="px-4 py-2 rounded-xl bg-purple-900/30 text-purple-200 font-bold">🟣 Hotovo – čeká na potvrzení vedoucího</span>`)
                             : (!isW
-                                ? (task.section==='prijem'
-                                    ? `<div class=\"flex flex-wrap gap-3\">`
-                                        + `<button onclick=\"startPhase(${task.id},'vykladka')\" class=\"bg-green-600 hover:bg-green-500 text-white px-6 py-3 rounded-xl font-bold\">▶ Vykládka</button>`
-                                        + `<button onclick=\"startPhase(${task.id},'trideni')\" class=\"bg-green-600 hover:bg-green-500 text-white px-6 py-3 rounded-xl font-bold\">▶ Třídění</button>`
-                                        + `</div>`
-                                    : `<button onclick="startW(${task.id})" class="bg-green-600 hover:bg-green-500 text-white px-8 py-3 rounded-xl font-bold">▶ ${tx('start')}</button>`)
+                                ? `<button onclick="startW(${task.id})" class="bg-green-600 hover:bg-green-500 text-white px-8 py-3 rounded-xl font-bold">▶ ${tx('start')}</button>`
                                 : `<button onclick="pauseW(${task.id})" class="bg-yellow-600 hover:bg-yellow-500 text-white px-6 py-3 rounded-xl font-bold">⏸ ${tx('pause')}</button>
                                    <button onclick="stopW(${task.id})" class="bg-gray-600 hover:bg-gray-500 text-white px-6 py-3 rounded-xl font-bold">⏹ ${tx('stop')}</button>
                                    <button onclick="completeW(${task.id})" class="ardon-red hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold">✅ ${isEmp?'Odeslat ke schválení':tx('complete')}</button>`)
@@ -1292,56 +1142,6 @@ async function pauseW(tid){
 
 async function stopW(tid){await pauseW(tid);}
 
-
-// ======== RECEIPT PHASE TIMERS (Příjem: vykládka / třídění) ========
-const PHASE_TIMERS = {}; // key: `${taskId}:${phase}` -> {st, iv}
-
-function phaseKey(tid,phase){ return `${tid}:${phase}`; }
-
-function sumPhaseSeconds(task, phase){
-    const entries = task.time_entries ? JSON.parse(task.time_entries) : [];
-    return entries.filter(e=>e.phase===phase).reduce((s,e)=>s+(e.duration||0),0);
-}
-
-function startPhaseTimer(tid, phase){
-    const task = TASKS.find(t=>t.id===tid); if(!task) return;
-    const key = phaseKey(tid,phase);
-    const base = sumPhaseSeconds(task, phase);
-    const el = document.getElementById(`phase_time_${tid}_${phase}`);
-    if(PHASE_TIMERS[key]) return;
-    PHASE_TIMERS[key] = { st: Date.now() - base*1000, iv: null };
-    PHASE_TIMERS[key].iv = setInterval(()=>{
-        const secs = Math.floor((Date.now()-PHASE_TIMERS[key].st)/1000);
-        if(el) el.textContent = fmt(secs);
-    }, 500);
-}
-
-async function startPhase(tid, phase){
-    const task=TASKS.find(t=>t.id===tid); if(!task) return;
-    // mark in progress + add worker
-    const aw=task.active_workers?JSON.parse(task.active_workers):[];
-    if(!aw.includes(CU.id)) aw.push(CU.id);
-    await updDB(tid,{active_workers:JSON.stringify(aw),status:'inProgress'});
-    startPhaseTimer(tid, phase);
-    openDetail(tid);
-}
-
-async function pausePhase(tid, phase){
-    const key = phaseKey(tid,phase);
-    if(!PHASE_TIMERS[key]) return;
-    const task=TASKS.find(t=>t.id===tid); if(!task) return;
-    const elapsed = Math.floor((Date.now()-PHASE_TIMERS[key].st)/1000);
-    clearInterval(PHASE_TIMERS[key].iv); delete PHASE_TIMERS[key];
-    const entries = task.time_entries?JSON.parse(task.time_entries):[];
-    const prev = entries.filter(e=>e.phase===phase).reduce((s,e)=>s+(e.duration||0),0);
-    const ne = {userId: CU.id, duration: elapsed - prev, ts: new Date().toISOString(), phase};
-    const aw = task.active_workers?JSON.parse(task.active_workers).filter(id=>id!==CU.id):[];
-    await updDB(tid,{time_entries:JSON.stringify([...entries,ne]),active_workers:JSON.stringify(aw)});
-    openDetail(tid);
-}
-
-async function stopPhase(tid, phase){ await pausePhase(tid, phase); }
-
 async function completeW(tid){
     // Always store current segment first
     await pauseW(tid);
@@ -1480,47 +1280,9 @@ async function updDB(tid,upd){
     saveLoc();
 }
 
-async function addReceiptNote(tid){
-    const task = TASKS.find(t=>t.id===tid);
-    if(!task) return;
-    const txtEl = document.getElementById('receiptNoteText');
-    const fileEl = document.getElementById('receiptNotePhoto');
-    const note = (txtEl?.value||'').trim();
-    const file = fileEl?.files?.[0] || null;
-    if(!note && !file){
-        notify('Napiš poznámku nebo přidej foto.');
-        return;
-    }
-    let photo_url = '';
-    if(file){
-        try{ photo_url = await fileToBase64(file); }catch(e){ photo_url=''; }
-    }
-
-    const entries = task.time_entries ? JSON.parse(task.time_entries) : [];
-    entries.push({
-        user_id: CU.id,
-        user_name: CU.full_name,
-        endTime: new Date().toISOString(),
-        duration: 0,
-        phase: 'receipt_note',
-        note,
-        photo_url
-    });
-
-    await updDB(tid, { time_entries: JSON.stringify(entries) });
-
-    if(txtEl) txtEl.value='';
-    if(fileEl) fileEl.value='';
-    await openDetail(tid);
-    notify('✅ Záznam k příjmu uložen');
-}
-
 function openCreate(sec){
     document.getElementById('formCreate').reset();
     if(sec)document.getElementById('createSection').value=sec;
-    // Ensure section-specific fields (Potisk/Příjem/Extra práce) are visible immediately
-    try{ const cs=document.getElementById('createSection'); if(cs) toggleSectionFields(cs.value); }catch(e){}
-
     const as=document.getElementById('assignSelect');
     as.innerHTML=USERS.filter(u=>u.role==='employee').map(u=>`<option value="${u.id}">${u.full_name} (${sn(u.section)})</option>`).join('');
     // Show billing section only for admin/manager
@@ -1552,20 +1314,7 @@ async function submitCreate(ev){
         billed_note: fd.get('billed_note')||''
     };
     
-    let desc = fd.get('description')||'';
-    const sec = fd.get('section');
-    if(sec==='prijem'){
-        const c = fd.get('receipt_container')||'';
-        const cartons = fd.get('receipt_cartons')||'';
-        const note = fd.get('receipt_note')||'';
-        const head = `[PŘÍJEM] Kontejner: ${c||'-'} | Kartony: ${cartons||'-'} | Pozn.: ${note||'-'}`;
-        desc = head + (desc?`\n${desc}`:'');
-    }
-    if(sec==='extra_prace' && fd.get('is_open_ended')){
-        const head = `[EXTRA] Nekonečný úkol (měsíční report)`;
-        desc = head + (desc?`\n${desc}`:'');
-    }
-    const nt={task_number:fd.get('task_number'),task_name:fd.get('task_name'),supplier:fd.get('supplier'),goods_type:fd.get('goods_type'),order_number:fd.get('order_number'),aviso_number:fd.get('aviso_number'),description:desc,work_procedure:fd.get('work_procedure'),section:sec,priority:parseInt(fd.get('priority'))||0,norm:fd.get('norm')?parseFloat(fd.get('norm')):null,assigned_to:JSON.stringify(at),photo_url:photoUrl,billing:JSON.stringify(billing),created_by:CU.id,status:'pending',time_entries:'[]',materials:'[]',active_workers:'[]',completed_pieces:0,created_at:new Date().toISOString()};
+    const nt={task_number:fd.get('task_number'),task_name:fd.get('task_name'),supplier:fd.get('supplier'),goods_type:fd.get('goods_type'),order_number:fd.get('order_number'),aviso_number:fd.get('aviso_number'),description:fd.get('description'),work_procedure:fd.get('work_procedure'),section:fd.get('section'),container_type:fd.get('container_type')||'',cartons:fd.get('cartons')?parseInt(fd.get('cartons')):null,receipt_note:fd.get('receipt_note')||'',open_ended:fd.get('open_ended')?true:false,priority:parseInt(fd.get('priority'))||0,norm:fd.get('norm')?parseFloat(fd.get('norm')):null,assigned_to:JSON.stringify(at),photo_url:photoUrl,billing:JSON.stringify(billing),created_by:CU.id,status:'pending',time_entries:'[]',materials:'[]',active_workers:'[]',completed_pieces:0,created_at:new Date().toISOString()};
     try{const{data,error}=await db.from('tasks').insert([nt]).select();if(data&&data[0])TASKS.unshift(data[0]);else throw error;}
     catch(e){nt.id=Date.now();TASKS.unshift(nt);saveLoc();}
     closeModal('modalCreate');showView(VIEW);notify('✅ Úkol byl vytvořen!');
@@ -1744,10 +1493,10 @@ function renderReports(filterSecs, filterEmp){
         {val:'exqc', label:'🔍 ExQC'},
         {val:'blistrovani', label:'💊 Blistrování'},
         {val:'potisk', label:'🖨️ Potisk'},
-        {val:'prace_z_domu', label:'🏠 Práce z domu'},
-        {val:'grafika', label:'🎨 Grafika'},
         {val:'prijem', label:'📦 Příjem'},
         {val:'extra_prace', label:'🧹 Extra práce'},
+        {val:'prace_z_domu', label:'🏠 Práce z domu'},
+        {val:'grafika', label:'🎨 Grafika'},
     ];
     const sections = CU.role==='superAdmin' ? allSections : allSections.filter(s=>s.val==='all'||managerSecs.includes(s.val));
     const employees = USERS.filter(u=>u.role==='employee');
@@ -2550,11 +2299,9 @@ function expPDF(tid){
                     <select name="section" id="manualSection" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:border-red-500 focus:outline-none text-sm">
                         <option value="exqc">ExQC</option>
                         <option value="blistrovani">Blistrování</option>
-                        <option value="potisk">Potisk</option>
+                        <option value="potisk">Potisk</option><option value="prijem">Příjem</option><option value="extra_prace">Extra práce</option>
                         <option value="prace_z_domu">Práce z domu</option>
                         <option value="grafika">Grafika</option>
-                        <option value="prijem">Příjem</option>
-                        <option value="extra_prace">Extra práce</option>
                     </select></div>
                     <div><label class="block text-gray-500 text-xs mb-1">Priorita</label>
                     <select name="priority" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:border-red-500 focus:outline-none text-sm">
@@ -2831,11 +2578,9 @@ function expAllPDF(filterSecs){
                     <select name="section" id="manualSection" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:border-red-500 focus:outline-none text-sm">
                         <option value="exqc">ExQC</option>
                         <option value="blistrovani">Blistrování</option>
-                        <option value="potisk">Potisk</option>
+                        <option value="potisk">Potisk</option><option value="prijem">Příjem</option><option value="extra_prace">Extra práce</option>
                         <option value="prace_z_domu">Práce z domu</option>
                         <option value="grafika">Grafika</option>
-                        <option value="prijem">Příjem</option>
-                        <option value="extra_prace">Extra práce</option>
                     </select></div>
                     <div><label class="block text-gray-500 text-xs mb-1">Priorita</label>
                     <select name="priority" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:border-red-500 focus:outline-none text-sm">
@@ -3141,12 +2886,12 @@ function toggleSectionFields(sec){
     }
     const rf=document.getElementById('receiptFields');
     if(rf){
-        if(sec==='prijem')rf.classList.remove('hidden');
+        if(sec==='prijem') rf.classList.remove('hidden');
         else rf.classList.add('hidden');
     }
     const ef=document.getElementById('extraWorkFields');
     if(ef){
-        if(sec==='extra_prace')ef.classList.remove('hidden');
+        if(sec==='extra_prace') ef.classList.remove('hidden');
         else ef.classList.add('hidden');
     }
 }
@@ -3818,11 +3563,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
                     <select name="section" id="manualSection" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:border-red-500 focus:outline-none text-sm">
                         <option value="exqc">ExQC</option>
                         <option value="blistrovani">Blistrování</option>
-                        <option value="potisk">Potisk</option>
+                        <option value="potisk">Potisk</option><option value="prijem">Příjem</option><option value="extra_prace">Extra práce</option>
                         <option value="prace_z_domu">Práce z domu</option>
                         <option value="grafika">Grafika</option>
-                        <option value="prijem">Příjem</option>
-                        <option value="extra_prace">Extra práce</option>
                     </select></div>
                     <div><label class="block text-gray-500 text-xs mb-1">Priorita</label>
                     <select name="priority" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:border-red-500 focus:outline-none text-sm">
